@@ -1,0 +1,11 @@
+[Unit]
+Description=Setup autostart
+After=multi-user.target network.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/install.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
