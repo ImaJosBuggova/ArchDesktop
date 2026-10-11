@@ -39,9 +39,35 @@ mount "$P3" /mnt
 mkdir -p /mnt/boot
 mount "$P1" /mnt/boot
 
-echo "Running pacstrap core utilities..."
-pacstrap -K /mnt base linux linux-firmware sudo networkmanager xorg-server power-profiles-daemon pipewire pipewire-audio pipewire-alsa pipewire-jack pipewire-pulse wireplumber plasma-pa bluez bluez-utils plasma-desktop sddm kde-cli-tools plasma-nm plasma-systemmonitor sddm-kcm firefox thunderbird dolphin ark konsole unrar unzip p7zip lrzip lz4 kdeconnect papirus-icon-theme ttf-fira-sans ttf-fira-mono
+echo "Detecting CPU..."
+PROC=$(lscpu | grep -oP 'Vendor ID:\s+\K\w+')
+if [ "$PROC" = "GenuineIntel" ]; then
+    UCODE="intel-ucode"
+    FW_CPU="linux-firmware-intel"
+else
+    UCODE="amd-ucode"
+    FW_CPU="linux-firmware-amd linux-firmware-amdgpu"
+fi
+echo $PROC
+sleep 1
 
+echo ""
+echo "Firmware setup"
+pacstrap -K /mnt base linux $UCODE $FW_CPU sudo networkmanager xorg-server power-profiles-daemon
+
+echo ""
+echo "Audio setup"
+pacstrap /mnt pipewire pipewire-audio pipewire-alsa pipewire-jack pipewire-pulse wireplumber bluez bluez-utils
+
+echo ""
+echo "KDE Setup"
+pacstrap /mnt sddm sddm-kcm plasma-desktop plasma-pa plasma-nm  kde-cli-tools ttf-fira-sans ttf-fira-mono
+
+echo ""
+echo "Apps setup"
+pacstrap /mnt dolphin ark konsole unrar unzip p7zip kdeconnect papirus-icon-theme firefox thunderbird plasma-systemmonitor kinfocenter
+
+echo ""
 echo "Generating fstab entries..."
 genfstab -U /mnt >> /mnt/etc/fstab
 
