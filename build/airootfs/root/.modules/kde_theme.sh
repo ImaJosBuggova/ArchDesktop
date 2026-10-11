@@ -170,6 +170,11 @@ var launcher = bottomPanel.addWidget("org.kde.plasma.kickoff");
 launcher.currentConfigGroup = ["General"];
 launcher.writeConfig("icon", "/usr/share/pixmaps/arch-crystal.svg");
 launcher.writeConfig("pin", false);
+launcher.writeConfig("hoverActivate", true);
+launcher.writeConfig(
+    "favorites", 
+    "preferred://browser,preferred://filemanager,applications:org.kde.konsole.desktop,applications:org.kde.plasma.systemmonitor.desktop,applications:systemsettings.desktop"
+);
 
 var tasks = bottomPanel.addWidget("org.kde.plasma.icontasks");
 tasks.currentConfigGroup = ["General"];

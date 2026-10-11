@@ -40,7 +40,7 @@ mkdir -p /mnt/boot
 mount "$P1" /mnt/boot
 
 echo "Running pacstrap core utilities..."
-pacstrap -K /mnt base linux linux-firmware sudo networkmanager xorg-server power-profiles-daemon pipewire pipewire-audio pipewire-alsa pipewire-jack pipewire-pulse wireplumber plasma-pa bluez bluez-utils plasma-desktop sddm kde-cli-tools plasma-nm plasma-systemmonitor firefox thunderbird dolphin ark konsole unrar unzip p7zip lrzip lz4 kdeconnect papirus-icon-theme ttf-fira-sans ttf-fira-mono
+pacstrap -K /mnt base linux linux-firmware sudo networkmanager xorg-server power-profiles-daemon pipewire pipewire-audio pipewire-alsa pipewire-jack pipewire-pulse wireplumber plasma-pa bluez bluez-utils plasma-desktop sddm kde-cli-tools plasma-nm plasma-systemmonitor sddm-kcm firefox thunderbird dolphin ark konsole unrar unzip p7zip lrzip lz4 kdeconnect papirus-icon-theme ttf-fira-sans ttf-fira-mono
 
 echo "Generating fstab entries..."
 genfstab -U /mnt >> /mnt/etc/fstab

@@ -1,0 +1,76 @@
+name: Build Custom Arch Linux ISO
+
+on:
+  push:
+    tags:
+      - 'v*'            # Triggers a new release automatically when you push a version tag (e.g., v1.0.0)
+  workflow_dispatch:     # Allows you to manually trigger a build and release from the Actions tab
+
+permissions:
+  contents: write       # CRITICAL: Gives the GitHub runner permission to create and upload releases
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    
+    container:
+      image: archlinux:latest
+      options: --privileged
+
+    steps:
+    - name: Checkout Code Base
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0   # Fetches full history so tag references resolve cleanly
+
+    - name: Initialize System Environment & Mirrors
+      run: |
+        echo "Refreshing Pacman mirrorlists..."
+        pacman -Sy --noconfirm archlinux-keyring
+        pacman -Syu --noconfirm
+        
+        echo "Installing Archiso Core dependencies..."
+        pacman -S --noconfirm archiso parted squashfs-tools dosfstools libisoburn lynx
+
+    - name: Stage Custom Distro Workspace Structure
+      run: |
+        echo "Creating build staging layout directories..."
+        mkdir -p ~/CustomDistro/out
+        
+        # 1. Sync repository config profile files
+        cp -r ./build ~/CustomDistro/build
+        
+        # 2. Re-create the inner target user execution context path
+        mkdir -p ~/CustomDistro/build/airootfs/root/ArchInstall
+        
+        # 3. Inject scripts, configs, assets, and themes cleanly into the layout
+        cp -r ./install.sh ~/CustomDistro/build/airootfs/root/ArchInstall/
+        cp -r ./.modules ~/CustomDistro/build/airootfs/root/ArchInstall/
+        cp ./wallpaper.jpg ~/CustomDistro/build/airootfs/root/ArchInstall/
+        cp ./Bibata-Modern-Ice.tar.xz ~/CustomDistro/build/airootfs/root/ArchInstall/
+        cp ./arch-crystal.svg ~/CustomDistro/build/airootfs/root/ArchInstall/
+        
+        # 4. Lock down execute permission flags natively before packaging
+        chmod +x ~/CustomDistro/build/airootfs/root/ArchInstall/install.sh
+        chmod +x ~/CustomDistro/build/airootfs/root/ArchInstall/.modules/*.sh
+
+    - name: Compile Custom Live ISO Media
+      run: |
+        echo "Firing up mkarchiso compiler sequence..."
+        mkarchiso -v -w /tmp/archiso-work -o ~/CustomDistro/out ~/CustomDistro/build
+
+    - name: Publish Automated GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        # If triggered via tag, use the tag name. If manual workflow run, name it 'latest'
+        tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
+        name: ${{ github.ref_type == 'tag' && github.ref_name || 'ArchDesktop Rolling Release' }}
+        body: |
+          Automated compilation output for **ArchDesktop OS**.
+          
+          - **Kernel baseline:** Rolling Stable
+          - **Desktop Interface:** Custom Dual-Panel KDE Plasma 6
+          - **Font Core:** Fira Sans & Fira Mono
+        draft: false
+        prerelease: false
+        files: /root/CustomDistro/out/*.iso

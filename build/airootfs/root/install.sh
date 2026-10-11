@@ -9,15 +9,17 @@ fi
 
 MODULE_DIR="$(dirname "$(readlink -f "$0")")/.modules"
 
-echo "========================================="
-echo "   WELCOME TO YOUR CUSTOM ARCH INSTALLER"
-echo "========================================="
-
 # --- Keyboard Layout ---
 read -p "Enter your keyboard layout (default: us): " KEYMAP
 KEYMAP=${KEYMAP:-"us"}
 
 loadkeys $KEYMAP
+
+# --- Interactive Network Validation Verification ---
+echo "Validating internet connectivity..."
+if ! ping -c 1 -W 2 1.1.1.1 &>/dev/null; then
+    bash "$MODULE_DIR/connect_to_wifi.sh"
+fi
 
 # --- Storage Discovery ---
 echo ""
